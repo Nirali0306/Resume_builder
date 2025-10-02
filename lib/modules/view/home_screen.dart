@@ -1,13 +1,34 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:resume_builder/modules/model/resume_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ResumeModel? resumeModel;
+
+  const HomeScreen({super.key, this.resumeModel});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  String _buildSkillsText(ResumeModel data) {
+    List<String> skills = [];
+
+    if (data.skill1.trim().isNotEmpty) skills.add(data.skill1);
+    if (data.skill2.trim().isNotEmpty) skills.add(data.skill2);
+    if (data.skill3.trim().isNotEmpty) skills.add(data.skill3);
+
+    return skills.isEmpty ? "Flutter, Dart, Firebase" : skills.join(', ');
+  }
+
+  String withFallback(String value, String fallback) {
+    return value.trim().isEmpty ? fallback : value.trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,16 +42,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          buildResumeCard(context),
-           SizedBox(height: 20),
-        ],
-      ),
+                padding: EdgeInsets.all(16),
+                children: [
+                  buildResumeCard(context),
+                  SizedBox(height: 20),
+                ],
+              ),
     );
   }
 
   Widget buildResumeCard(BuildContext context) {
+    final resumeModel = widget.resumeModel;
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade400),
@@ -48,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     Text(
-                      "Emilly",
+                      withFallback(resumeModel!.name, "Emily deo").toUpperCase(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -56,91 +78,92 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     SizedBox(height: 4),
-                    Text("Developer", style: TextStyle(fontSize: 14)),
+                    Text(
+                      withFallback(resumeModel.jobTitle, "computer Engineer"),
+                      style: TextStyle(fontSize: 14),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-           SizedBox(height: 12),
-           Center(
+          SizedBox(height: 12),
+          Center(
             child: Text(
-              "123-456-7890 | john.doe@example.com",
+              "${withFallback(resumeModel.phone, "123-456-7890")} | ${withFallback(resumeModel.email, "emily.doe@example.com")}",
               style: TextStyle(fontSize: 12),
               textAlign: TextAlign.center,
             ),
           ),
-           Divider(height: 24, thickness: 1),
-           Text("PROFILE", style: TextStyle(fontWeight: FontWeight.bold)),
-           SizedBox(height: 4),
-           Text(
-            "Summary",
+          Divider(height: 24, thickness: 1),
+          Text("PROFILE", style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(height: 4),
+          Text(
+            withFallback(
+              resumeModel.summary,
+              "Passionate developer with experience in building scalable apps.",
+            ),
             style: TextStyle(fontSize: 13),
           ),
-           SizedBox(height: 12),
-           Text(
+          SizedBox(height: 12),
+          Text(
             "WORK EXPERIENCE",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-           SizedBox(height: 4),
+          SizedBox(height: 4),
           buildWorkItem(
-            "Computer Engineer",
-            "Tech",
-            "2024-01 - 2025-02"
+            withFallback(resumeModel.role, "Application Developer"),
+            withFallback(resumeModel.company, "Tech"),
+            withFallback(resumeModel.duration, "2020 - 2023"),
           ),
-         SizedBox(height: 12),
-           Text(
-            "EDUCATION",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-           SizedBox(height: 4),
-           Text(
-            "University\nB.sc in Computer Science\n2018 - 2020",
+          SizedBox(height: 12),
+          Text("EDUCATION", style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(height: 4),
+          Text(
+            "${withFallback(resumeModel.education, "vnsgu University")}\n"
+            "${withFallback(resumeModel.degree, "B.Sc in Computer Science")}\n"
+            "${withFallback(resumeModel.year, "2015 - 2019")}",
             style: TextStyle(fontSize: 13),
           ),
 
-           SizedBox(height: 12),
+          SizedBox(height: 12),
 
           // Skills
-           Text("SKILLS", style: TextStyle(fontWeight: FontWeight.bold)),
-           SizedBox(height: 4),
-           Text(
-            "Flutter, Dart, Firebase, REST API",
-            style: TextStyle(fontSize: 13),
-          ),
+          Text("SKILLS", style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(height: 4),
+          Text(_buildSkillsText(resumeModel), style: TextStyle(fontSize: 13)),
 
-           SizedBox(height: 20),
+          SizedBox(height: 20),
           Center(
-            child:  ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade300,
-                    padding: const EdgeInsets.symmetric(vertical: 16,horizontal: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                    );
-                  },
-                  child: const Text(
-                    "Select Template",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade300,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 16,
                 ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => HomeScreen()),
+                // );
+              },
+              child: const Text(
+                "Select Template",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget buildWorkItem(
-    String role,
-    String company,
-    String duration,
-  ) {
+  Widget buildWorkItem(String role, String company, String duration) {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 8),
       child: Column(
@@ -149,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             "$role\n$company\n$duration",
             style: const TextStyle(fontSize: 13),
-          ),        
+          ),
         ],
       ),
     );

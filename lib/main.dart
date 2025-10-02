@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:resume_builder/modules/view/add_datails_screen.dart';
+import 'package:resume_builder/modules/view/add_details_screen.dart';
 
 void main() {
   runApp(const MyApp());
